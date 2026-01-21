@@ -23,7 +23,8 @@ export const loginAdmin = async (req: Request, res: Response) => {
     .cookie("auth_token", token, {
       httpOnly: true,
       secure: env.NODE_ENV === "production",
-      sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: env.NODE_ENV === "lax",
+      // sameSite: env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({
