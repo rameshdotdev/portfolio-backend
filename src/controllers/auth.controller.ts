@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import User from "../models/User.js";
 import { generateToken } from "../utils/jwt.js";
 import { comparePassword } from "../utils/bcrypt.js";
+import { env } from "../config/env.js";
 
 export const loginAdmin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -21,8 +22,8 @@ export const loginAdmin = async (req: Request, res: Response) => {
   res
     .cookie("auth_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: env.NODE_ENV === "production",
+      sameSite: env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({
