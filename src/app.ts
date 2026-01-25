@@ -36,10 +36,12 @@ import worksAt from "./routes/work.routes.js";
 import visitor from "./routes/visitor.route.js";
 import xProfile from "./routes/x.route.js";
 import yesterdayWorked from "./routes/yesterday-worked.route.js";
+import wakatime from "./routes/wakatime.routes.js";
 
 app.use("/api", healthRoute);
 app.use("/api", visitor);
 app.use("/api", yesterdayWorked);
+app.use("/api", wakatime);
 app.use("/api/x", xProfile);
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);

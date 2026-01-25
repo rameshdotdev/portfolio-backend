@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import axios from "axios";
 import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
+import { saveWakaTimeDailyIfNotExists } from "../utils/saveWakaTimeDailyIfNotExists.js";
 
 const router = Router();
 
@@ -9,7 +10,7 @@ function toBasicAuth(apiKey: string) {
   return `Basic ${Buffer.from(apiKey + ":").toString("base64")}`;
 }
 
-const CACHE_TTL_SECONDS = 60 * 60 * 8; // 8 hours
+const CACHE_TTL_SECONDS = 60 * 60 * 4; // 4 hours
 
 router.get("/worked-for/yesterday", async (_req: Request, res: Response) => {
   try {
@@ -68,9 +69,17 @@ router.get("/worked-for/yesterday", async (_req: Request, res: Response) => {
       })),
     };
 
-    // ✅ redis v4 correct set
-    await redis.set(cacheKey, payload, {
-      ex: CACHE_TTL_SECONDS,
+    // ✅ Redis cache
+    await redis.set(cacheKey, payload, { ex: CACHE_TTL_SECONDS });
+
+    // ✅ Mongo save (insert-only + silent duplicate)
+    await saveWakaTimeDailyIfNotExists({
+      date: payload.date,
+      combined: { total_seconds: payload.combined.total_seconds },
+      editors: payload.editors.map((e: any) => ({
+        name: e.name,
+        total_seconds: e.total_seconds,
+      })),
     });
 
     return res.json({
