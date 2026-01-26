@@ -19,17 +19,10 @@ export const loginAdmin = async (req: Request, res: Response) => {
 
   const token = generateToken(user._id.toString());
 
-  return res
-    .cookie("auth_token", token, {
-      httpOnly: true,
-      secure: true, // MUST be true on vercel https
-      sameSite: "none", // MUST be none for cross-site
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-    .json({
-      message: "Login successful",
-    });
+  return res.json({
+    success: true,
+    token,
+  });
 };
 
 export const logout = async (req: Request, res: Response) => {
