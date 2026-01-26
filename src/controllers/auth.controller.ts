@@ -20,10 +20,11 @@ export const loginAdmin = async (req: Request, res: Response) => {
   const token = generateToken(user._id.toString());
 
   res.cookie("auth_token", token, {
-  httpOnly: true,
-  secure: env.NODE_ENV === "production", // true on vercel/https
-  sameSite: env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: true, // MUST be true on vercel https
+    sameSite: "none", // MUST be none for cross-site
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
