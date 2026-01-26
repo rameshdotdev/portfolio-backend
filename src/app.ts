@@ -4,14 +4,17 @@ import cookieParser from "cookie-parser";
 
 const app: Application = express();
 const allowedOrigins = [
-  "https://its-ramesh.vercel.app",
   "https://hi-ramesh.vercel.app",
   "http://localhost:3000",
 ];
 // Middlewares
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow Postman/server requests
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );

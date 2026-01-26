@@ -19,19 +19,12 @@ export const loginAdmin = async (req: Request, res: Response) => {
 
   const token = generateToken(user._id.toString());
 
-  res
-    .cookie("auth_token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      // sameSite: env.NODE_ENV === "production" ? "none" : "lax",
-      sameSite: env.NODE_ENV === "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-    .json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-    });
+  res.cookie("auth_token", token, {
+  httpOnly: true,
+  secure: env.NODE_ENV === "production", // true on vercel/https
+  sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 };
 
 export const logout = async (req: Request, res: Response) => {
