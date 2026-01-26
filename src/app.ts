@@ -3,20 +3,19 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 const app: Application = express();
-const allowedOrigins = [
-  "https://hi-ramesh.vercel.app",
-  "http://localhost:3000",
-];
+// const allowedOrigins = [
+//   "https://hi-ramesh.vercel.app",
+//   "http://localhost:3000",
+// ];
 // Middlewares
-app.use(
-  cors({
-    origin: ["https://hi-ramesh.vercel.app", "http://localhost:3000"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-app.options("*", cors());
+const corsOptions = {
+  origin: ["https://hi-ramesh.vercel.app", "http://localhost:3000"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
