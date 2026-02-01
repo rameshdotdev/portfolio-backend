@@ -1,17 +1,14 @@
 import express, { type Application, type Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { env } from "./config/env.js";
 
 const app: Application = express();
-const allowedOrigins = [
-  "https://its-ramesh.vercel.app",
-  "https://hi-ramesh.vercel.app",
-  "http://localhost:3000",
-];
+
 // Middlewares
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: env.FRONTEND_URL,
     credentials: true,
   }),
 );
