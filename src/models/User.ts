@@ -21,13 +21,18 @@ const userSchema = new Schema(
       select: false, // important for security
     },
 
+    avatar: {
+      url: { type: String },
+      publicId: { type: String },
+    },
+
     role: {
       type: String,
       enum: ["ADMIN"],
       default: "ADMIN",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* 🔐 Hash password before saving */

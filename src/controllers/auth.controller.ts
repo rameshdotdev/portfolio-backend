@@ -42,15 +42,15 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
-export const getMe = async (req: Request & { user?: any }, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
+// export const getMe = async (req: Request & { user?: any }, res: Response) => {
+//   if (!req.user) {
+//     return res.status(401).json({ message: "Not authenticated" });
+//   }
 
-  res.json({
-    _id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-    role: req.user.role,
-  });
-};
+//   res.json({
+//     _id: req.user._id,
+//     name: req.user.name,
+//     email: req.user.email,
+//     role: req.user.role,
+//   });
+// };
