@@ -1,11 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import axios from "axios";
 import { env } from "../config/env.js";
-import { cacheOrFetch } from "../utils/cache.js";
 
 const router = Router();
-
-const CACHE_TTL_SECONDS = 60 * 60 * 4; // 4 hours
 
 function toBasicAuth(apiKey: string) {
   return `Basic ${Buffer.from(apiKey + ":").toString("base64")}`;
@@ -64,20 +61,16 @@ async function fetchWakaTimeData() {
 
 router.get("/worked-for/yesterday", async (_req: Request, res: Response) => {
   try {
-    const result = await cacheOrFetch(
-      "wakatime:yesterday:cursor-vscode",
-      CACHE_TTL_SECONDS,
-      fetchWakaTimeData,
-    );
+    const payload = await fetchWakaTimeData();
 
     return res.json({
-      source: result.source,
-      ...result.data,
+      source: "live",
+      ...payload,
     });
   } catch (error: any) {
     return res.status(500).json({
       message: "Server Error",
-      details: error?.message,
+      details: error?.response?.data ?? error?.message,
     });
   }
 });
