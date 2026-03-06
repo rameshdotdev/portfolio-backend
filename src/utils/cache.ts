@@ -9,10 +9,14 @@ export async function cacheOrFetch<T>(
     const cached = await redis.get(key);
 
     if (cached && typeof cached === "string") {
-      return {
-        source: "cache",
-        data: JSON.parse(cached),
-      };
+      try {
+        return {
+          source: "cache",
+          data: JSON.parse(cached),
+        };
+      } catch {
+        await redis.del(key);
+      }
     }
 
     const freshData = await fetcher();
@@ -26,8 +30,10 @@ export async function cacheOrFetch<T>(
       data: freshData,
     };
   } catch (error) {
-    // fallback if redis fails
+    console.error("Cache layer error:", error);
+
     const freshData = await fetcher();
+
     return {
       source: "live",
       data: freshData,
