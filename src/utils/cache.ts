@@ -7,7 +7,7 @@ export async function cacheOrFetch<T>(
 ): Promise<{ source: "cache" | "live"; data: T }> {
   try {
     const cached = await redis.get(key);
-
+    console.log("Fetching from cache", key, cached);
     if (cached && typeof cached === "string") {
       try {
         return {
@@ -20,7 +20,7 @@ export async function cacheOrFetch<T>(
     }
 
     const freshData = await fetcher();
-
+    console.log("Fetched fresh data", freshData);
     await redis.set(key, JSON.stringify(freshData), {
       ex: ttl,
     });

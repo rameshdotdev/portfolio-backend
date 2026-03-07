@@ -13,7 +13,7 @@ function toBasicAuth(apiKey: string) {
 
 async function fetchWakaTimeData() {
   const apiKey = env.WAKATIME_API_KEY;
-
+  console.log("Fetching Api", apiKey);
   if (!apiKey) {
     throw new Error("Missing WAKATIME_API_KEY");
   }
@@ -28,6 +28,7 @@ async function fetchWakaTimeData() {
     },
   );
 
+  console.log("Fetching Data", data);
   const days = data?.data ?? [];
   const yesterday = days?.[0];
   const editors = yesterday?.editors ?? [];
