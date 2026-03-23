@@ -1,4 +1,5 @@
 import { redis } from "../config/redis.js";
+
 export async function cacheOrFetch<T>(
   key: string,
   ttl: number,
