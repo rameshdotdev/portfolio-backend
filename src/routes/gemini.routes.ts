@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { streamText } from "ai";
+import { generateText } from "ai";
 import { redis } from "../config/redis.js";
 import { geminiRatelimit } from "../utils/ratelimit.js";
 
@@ -147,47 +147,13 @@ router.post("/", async (req: Request, res: Response) => {
       )
       .join("\n") + "\nAssistant:";
 
-  const result = streamText({
-    model: google("gemini-1.5-flash"),
+  const result = await generateText({
+    model: google("gemini-2.5-flash-lite"),
     system: buildSystemPrompt(projectContext, readme),
     prompt,
-  } as any);
+  });
 
-  // Set SSE headers for streaming
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-
-  const response = result.toTextStreamResponse();
-  const stream = response.body;
-  if (!stream) {
-    res.status(500).json({ error: "Failed to create stream" });
-    return;
-  }
-  const reader = stream.getReader();
-
-  const pump = async () => {
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          res.write("data: [DONE]\n\n");
-          res.end();
-          break;
-        }
-        const chunk = new TextDecoder().decode(value);
-        res.write(
-          `data: ${JSON.stringify({ type: "text-delta", delta: chunk })}\n\n`,
-        );
-      }
-    } catch (err) {
-      console.error("Streaming error:", err);
-      res.end();
-    }
-  };
-
-  pump();
+  res.json({ response: result.text });
 });
 
 export default router;
