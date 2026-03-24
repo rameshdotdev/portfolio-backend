@@ -19,15 +19,22 @@ export const loginAdmin = async (req: Request, res: Response) => {
   const token = generateToken(user._id.toString());
 
   res.cookie("auth_token", token, {
-    expires: new Date(Date.now() + 8 * 3600000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 8 * 60 * 60 * 1000,
   });
+
   return res.send(user);
 };
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    res.cookie("auth_token", null, {
-      expires: new Date(Date.now()),
+    res.cookie("auth_token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      expires: new Date(0),
     });
     return res.send("Logout Successful!!");
   } catch (error) {
