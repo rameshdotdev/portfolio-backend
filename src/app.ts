@@ -34,7 +34,6 @@ import worksAt from "./routes/work.routes.js";
 import visitor from "./routes/visitor.route.js";
 import yesterdayWorked from "./routes/yesterday-worked.route.js";
 import wakatime from "./routes/wakatime.routes.js";
-import geminiRoute from "./routes/gemini.routes.js";
 
 app.use("/api", healthRoute);
 app.use("/api", visitor);
@@ -48,5 +47,4 @@ app.use("/api/message", messageRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/hero", heroRoutes);
 app.use("/api/works-at", worksAt);
-app.use("/api/gemini", geminiRoute);
 export default app;

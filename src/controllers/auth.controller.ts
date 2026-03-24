@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import User from "../models/User.js";
 import { generateToken } from "../utils/jwt.js";
 import { comparePassword } from "../utils/bcrypt.js";
-import { env } from "../config/env.js";
 
 export const loginAdmin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -19,24 +18,18 @@ export const loginAdmin = async (req: Request, res: Response) => {
 
   const token = generateToken(user._id.toString());
 
-  return res.json({
-    success: true,
-    token,
+  res.cookie("auth_token", token, {
+    expires: new Date(Date.now() + 8 * 3600000),
   });
+  return res.send(user);
 };
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    res.clearCookie("auth_token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+    res.cookie("auth_token", null, {
+      expires: new Date(Date.now()),
     });
-
-    return res.json({
-      success: true,
-      message: "Logged out successfully",
-    });
+    return res.send("Logout Successful!!");
   } catch (error) {
     return res.status(500).json({ message: "Logout failed" });
   }
