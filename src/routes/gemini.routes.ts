@@ -114,29 +114,22 @@ function getClientIp(req: Request): string {
   return req.ip || "anonymous";
 }
 
-router.post("/", async (request: Request, res) => {
-  const ip = getClientIp(request);
+router.post("/", async (req: Request, res) => {
+  const ip = getClientIp(req);
   const { success, reset } = await geminiRatelimit.limit(ip);
 
   if (!success) {
     const retryAfter = Math.ceil((reset - Date.now()) / 1000);
     return res.status(429).json({
       error: "Too many requests",
-      message: "You have exceeded the rate limit. Please try again later.",
       retryAfter,
     });
   }
 
-  const { messages, projectContext } = request.body as {
-    messages: UIMessage[];
-    projectContext?: ProjectContext;
-  };
+  const { messages, projectContext } = req.body;
 
   if (!messages || messages.length === 0) {
-    return new Response(JSON.stringify({ error: "Messages are required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return res.status(400).json({ error: "Messages are required" });
   }
 
   const readme = projectContext
@@ -152,9 +145,10 @@ router.post("/", async (request: Request, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+  res.flushHeaders?.();
 
   for await (const chunk of result.textStream) {
-    res.write(chunk);
+    res.write(`data: ${chunk}\n\n`);
   }
 
   res.end();
