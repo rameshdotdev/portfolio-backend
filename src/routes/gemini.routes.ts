@@ -1,14 +1,21 @@
-import { Router, type Request } from "express";
+import { geminiRatelimit } from "../utils/ratelimit.js";
+import { redis } from "../config/redis.js";
+import "dotenv/config";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { redis } from "../config/redis.js";
-import { geminiRatelimit } from "../utils/ratelimit.js";
+import { type Request, type Response, Router } from "express";
+
 const router = Router();
 
 interface ProjectContext {
   title: string;
   excerpt: string;
   github: string;
+}
+
+interface ChatRequestBody {
+  messages: UIMessage[];
+  projectContext?: ProjectContext;
 }
 
 const README_CACHE_TTL_SECONDS = 60 * 60 * 24;
@@ -39,7 +46,7 @@ async function fetchReadmeFromGitHub(
   repo: string,
 ): Promise<string | null> {
   for (const branch of ["main", "master"]) {
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`;
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/README.md`;
     const res = await fetch(url);
     if (res.ok) {
       return await res.text();
@@ -104,54 +111,77 @@ ${readme ?? "README not available."}`;
 
 function getClientIp(req: Request): string {
   const forwardedFor = req.headers["x-forwarded-for"];
-  if (typeof forwardedFor === "string") {
-    return forwardedFor.split(",")[0].trim();
+  if (forwardedFor) {
+    return (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)
+      .split(",")[0]
+      .trim();
   }
-
   const realIp = req.headers["x-real-ip"];
-  if (typeof realIp === "string") return realIp;
-
-  return req.ip || "anonymous";
+  if (realIp) return Array.isArray(realIp) ? realIp[0] : realIp;
+  return req.socket?.remoteAddress ?? "anonymous";
 }
 
-router.post("/", async (req: Request, res) => {
-  const ip = getClientIp(req);
-  const { success, reset } = await geminiRatelimit.limit(ip);
+router.post(
+  "/",
+  async (req: Request<{}, {}, ChatRequestBody>, res: Response) => {
+    const ip = getClientIp(req);
+    const { success, reset } = await geminiRatelimit.limit(ip);
 
-  if (!success) {
-    const retryAfter = Math.ceil((reset - Date.now()) / 1000);
-    return res.status(429).json({
-      error: "Too many requests",
-      retryAfter,
+    if (!success) {
+      const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+      return res.status(429).setHeader("Retry-After", String(retryAfter)).json({
+        error: "Too many requests",
+        message: "You have exceeded the rate limit. Please try again later.",
+        retryAfter,
+      });
+    }
+
+    const { messages, projectContext } = req.body;
+
+    if (!messages || messages.length === 0) {
+      return res.status(400).json({ error: "Messages are required" });
+    }
+
+    const readme = projectContext
+      ? await fetchReadme(projectContext.github)
+      : null;
+
+    const result = streamText({
+      model: google("gemini-2.5-flash-lite"),
+      system: buildSystemPrompt(projectContext, readme),
+      messages: await convertToModelMessages(messages),
     });
-  }
 
-  const { messages, projectContext } = req.body;
+    const streamResponse = result.toUIMessageStreamResponse({
+      headers: {
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
 
-  if (!messages || messages.length === 0) {
-    return res.status(400).json({ error: "Messages are required" });
-  }
+    // Forward status and headers from the AI SDK response
+    res.status(streamResponse.status);
+    streamResponse.headers.forEach((value, key) => {
+      if (
+        !["transfer-encoding", "content-encoding"].includes(key.toLowerCase())
+      ) {
+        res.setHeader(key, value);
+      }
+    });
 
-  const readme = projectContext
-    ? await fetchReadme(projectContext.github)
-    : null;
+    // Pipe the Web API ReadableStream to the Express response
+    const reader = streamResponse.body!.getReader();
+    const decoder = new TextDecoder();
 
-  const result = streamText({
-    model: google("gemini-2.5-flash-lite"),
-    system: buildSystemPrompt(projectContext, readme),
-    messages: await convertToModelMessages(messages),
-  });
-
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.flushHeaders?.();
-
-  for await (const chunk of result.textStream) {
-    res.write(`data: ${chunk}\n\n`);
-  }
-
-  res.end();
-});
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(decoder.decode(value, { stream: true }));
+      }
+    } finally {
+      res.end();
+    }
+  },
+);
 
 export default router;
