@@ -39,7 +39,7 @@ async function fetchReadmeFromGitHub(
   repo: string,
 ): Promise<string | null> {
   for (const branch of ["main", "master"]) {
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/README.md`;
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`;
     const res = await fetch(url);
     if (res.ok) {
       return await res.text();
@@ -127,7 +127,7 @@ router.get("/", async (request: Request, res) => {
     });
   }
 
-  const { messages, projectContext } = (await request.body()) as {
+  const { messages, projectContext } = request.body as {
     messages: UIMessage[];
     projectContext?: ProjectContext;
   };
@@ -149,11 +149,15 @@ router.get("/", async (request: Request, res) => {
     messages: await convertToModelMessages(messages),
   });
 
-  return result.toUIMessageStreamResponse({
-    headers: {
-      "X-Content-Type-Options": "nosniff",
-    },
-  });
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  for await (const chunk of result.textStream) {
+    res.write(chunk);
+  }
+
+  res.end();
 });
 
 export default router;
