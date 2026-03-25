@@ -16,8 +16,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ai-sdk/google": "^3.0.53",
     "@types/bcrypt": "^6.0.0",
+    "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.1",
+    "ai": "^6.0.138",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
