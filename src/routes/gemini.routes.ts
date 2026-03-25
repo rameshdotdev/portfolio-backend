@@ -114,7 +114,7 @@ function getClientIp(req: Request): string {
   return req.ip || "anonymous";
 }
 
-router.get("/", async (request: Request, res) => {
+router.post("/", async (request: Request, res) => {
   const ip = getClientIp(request);
   const { success, reset } = await geminiRatelimit.limit(ip);
 
