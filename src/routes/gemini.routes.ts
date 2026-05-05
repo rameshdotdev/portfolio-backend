@@ -1,9 +1,9 @@
-import { geminiRatelimit } from "../utils/ratelimit.js";
-import { redis } from "../config/redis.js";
 import "dotenv/config";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { type Request, type Response, Router } from "express";
+import { geminiRatelimit } from "../utils/ratelimit.js";
+import { redis } from "../config/redis.js";
 
 const router = Router();
 

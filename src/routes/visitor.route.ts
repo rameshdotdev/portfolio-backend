@@ -8,7 +8,7 @@ import {
 const router = Router();
 
 // 1) Create / Track
-router.post("/send", trackVisitor);
+router.post("/", trackVisitor);
 
 // 2) Get (public summary OR admin chart)
 router.get("/visitor", parsialProtect, getVisitorData);

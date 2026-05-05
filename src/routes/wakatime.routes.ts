@@ -8,6 +8,6 @@ import {
 const router = Router();
 
 // router.post("/wakatime/daily", createWakaTimeDaily);
-router.get("/wakatime/daily", getWakaTimeDaily);
-router.get("/wakatime/daily/range", getWakaTimeDailyRange);
+router.get("/daily", getWakaTimeDaily);
+router.get("/daily/range", getWakaTimeDailyRange);
 export default router;

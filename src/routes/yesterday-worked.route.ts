@@ -57,7 +57,7 @@ async function fetchWakaTimeData() {
   };
 }
 
-router.get("/worked-for/yesterday", async (_req: Request, res: Response) => {
+router.get("/yesterday", async (_req: Request, res: Response) => {
   try {
     const result = await cacheOrFetch(
       "wakatime:yesterday:cursor-vscode",
