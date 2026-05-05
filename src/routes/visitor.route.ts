@@ -11,6 +11,6 @@ const router = Router();
 router.post("/", trackVisitor);
 
 // 2) Get (public summary OR admin chart)
-router.get("/visitor", parsialProtect, getVisitorData);
+router.get("/", parsialProtect, getVisitorData);
 
 export default router;
