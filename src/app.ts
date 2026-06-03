@@ -8,7 +8,7 @@ const app: Application = express();
 // Middlewares
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: ['https://imramesh.in','https://admin.imramesh.in','http://localhost:3000'],
     credentials: true,
   }),
 );
