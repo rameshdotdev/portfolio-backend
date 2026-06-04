@@ -8,10 +8,25 @@ const app: Application = express();
 // Middlewares
 app.use(
   cors({
-    origin: ['https://imramesh.in','https://admin.imramesh.in','http://localhost:3000'],
+    origin: (origin, callback) => {
+      console.log("Request Origin:", origin);
+
+      const allowedOrigins = [
+        "https://imramesh.in",
+        "https://admin.imramesh.in",
+        "http://localhost:3000",
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
     credentials: true,
   }),
 );
+
 app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
