@@ -5,14 +5,28 @@ import cookieParser from "cookie-parser";
 const app: Application = express();
 
 // Middlewares
+const allowedOrigins = [
+  "https://imramesh.in",
+  "https://admin.imramesh.in",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: ["https://admin.imramesh.in", "https://imramesh.in"],
+    origin(origin, callback) {
+      console.log("Origin:", origin);
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed`));
+      }
+    },
     credentials: true,
   }),
 );
 
-app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
