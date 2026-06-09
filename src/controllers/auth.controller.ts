@@ -34,8 +34,9 @@ export const logout = async (req: Request, res: Response) => {
   try {
     res.cookie("auth_token", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
+      domain: ".imramesh.in",
       expires: new Date(0),
     });
     return res.send("Logout Successful!!");
