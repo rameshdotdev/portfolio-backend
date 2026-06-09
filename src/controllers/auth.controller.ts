@@ -20,8 +20,10 @@ export const loginAdmin = async (req: Request, res: Response) => {
 
   res.cookie("auth_token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
+    domain: ".imramesh.in",
+    path: "/",
     maxAge: 8 * 60 * 60 * 1000,
   });
 
