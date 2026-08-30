@@ -8,23 +8,36 @@ const app: Application = express();
 const allowedOrigins = [
   "https://imramesh.in",
   "https://admin.imramesh.in",
+  "http://admin.imramesh.in",
   "http://localhost:3000",
   "http://localhost:5173",
 ];
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      // console.log("Origin:", origin);
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed`));
-      }
-    },
-    credentials: true,
-  }),
-);
+const corsOptions = {
+  origin(
+    origin: string | undefined,
+    callback: (error: Error | null, allow?: boolean) => void,
+  ) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
