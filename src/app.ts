@@ -4,51 +4,50 @@ import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://localhost:3000",
+  "https://localhost:5173",
+  "http://imramesh.in",
+  "https://imramesh.in",
+  "http://www.imramesh.in",
+  "https://www.imramesh.in",
+  "http://admin.imramesh.in",
+  "https://admin.imramesh.in",
+  "http://api.imramesh.in",
+  "https://api.imramesh.in",
+  process.env.FRONTEND_URL,
+].filter((origin): origin is string => Boolean(origin));
+
+const isAllowedOrigin = (origin: string | undefined) => {
+  if (!origin) return true;
+
+  if (allowedOrigins.includes(origin)) return true;
+
+  return (
+    /https?:\/\/([a-z0-9-]+\.)*imramesh\.in(:\d+)?$/i.test(origin) ||
+    /https?:\/\/([a-z0-9-]+\.)*vercel\.app(:\d+)?$/i.test(origin)
+  );
+};
+
 // Middlewares
-// const allowedOrigins = [
-//   "https://imramesh.in",
-//   "https://admin.imramesh.in",
-//   "http://admin.imramesh.in",
-//   "http://localhost:3000",
-//   "http://localhost:5173",
-// ];
-
-// const corsOptions = {
-//   origin(
-//     origin: string | undefined,
-//     callback: (error: Error | null, allow?: boolean) => void,
-//   ) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//       return;
-//     }
-
-//     callback(new Error(`Origin ${origin} not allowed`));
-//   },
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-//   allowedHeaders: [
-//     "Content-Type",
-//     "Authorization",
-//     "X-Requested-With",
-//     "Accept",
-//   ],
-//   optionsSuccessStatus: 204,
-// };
-
 app.use(
   cors({
-    origin: [
-      "www.imramesh.in",
-      "https://imramesh.in",
-      "http://imramesh.in",
-      "www.admin.imramesh.in",
-      "https://admin.imramesh.in",
-      "http://admin.imramesh.in",
-    ],
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   }),
 );
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
