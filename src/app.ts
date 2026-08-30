@@ -38,7 +38,14 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "www.imramesh.in",
+      "https://imramesh.in",
+      "http://imramesh.in",
+      "www.admin.imramesh.in",
+      "https://admin.imramesh.in",
+      "http://admin.imramesh.in",
+    ],
     credentials: true,
   }),
 );
