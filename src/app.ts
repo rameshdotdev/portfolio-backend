@@ -68,6 +68,7 @@ import geminiRoute from "./routes/gemini.routes.js";
 app.use("/health", healthRoute);
 app.use("/send", visitor);
 app.use("/worked-for", yesterdayWorked);
+app.use("/", yesterdayWorked);
 app.use("/wakatime", wakatime);
 app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);

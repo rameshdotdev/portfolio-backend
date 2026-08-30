@@ -11,28 +11,24 @@ type Payload = {
 };
 
 export async function saveWakaTimeDailyIfNotExists(payload: Payload) {
-  // schema requires date
-  if (!payload.date) return;
-
-  const alreadyExists = await WakaTimeDailyModel.exists({
-    date: payload.date,
-  });
-
-  if (alreadyExists) return;
-
-  try {
-    await WakaTimeDailyModel.create({
-      date: payload.date,
-      combined: {
-        total_seconds: payload.combined.total_seconds,
-      },
-      editors: payload.editors.map((e) => ({
-        name: e.name,
-        total_seconds: e.total_seconds,
-      })),
-    });
-  } catch (err: any) {
-    // silent duplicate in race condition
-    if (err?.code !== 11000) throw err;
+  if (!payload.date) {
+    throw new Error("WakaTime response did not include a date");
   }
+
+  await WakaTimeDailyModel.findOneAndUpdate(
+    { date: payload.date },
+    {
+      $setOnInsert: {
+        date: payload.date,
+        combined: {
+          total_seconds: payload.combined.total_seconds,
+        },
+        editors: payload.editors.map((e) => ({
+          name: e.name,
+          total_seconds: e.total_seconds,
+        })),
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
 }
