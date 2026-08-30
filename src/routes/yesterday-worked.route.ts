@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import axios from "axios";
 import { env } from "../config/env.js";
 import { cacheOrFetch } from "../utils/cache.js";
+import { saveWakaTimeDailyIfNotExists } from "../utils/saveWakaTimeDailyIfNotExists.js";
 
 import https from "https";
 const router = Router();
@@ -64,6 +65,13 @@ router.get("/yesterday", async (_req: Request, res: Response) => {
       CACHE_TTL_SECONDS,
       fetchWakaTimeData,
     );
+
+    // Save the fetched data to the database
+    await saveWakaTimeDailyIfNotExists({
+      date: result.data.date,
+      combined: result.data.combined,
+      editors: result.data.editors,
+    });
 
     return res.json({
       source: result.source,
