@@ -5,40 +5,43 @@ import cookieParser from "cookie-parser";
 const app: Application = express();
 
 // Middlewares
-const allowedOrigins = [
-  "https://imramesh.in",
-  "https://admin.imramesh.in",
-  "http://admin.imramesh.in",
-  "http://localhost:3000",
-  "http://localhost:5173",
-];
+// const allowedOrigins = [
+//   "https://imramesh.in",
+//   "https://admin.imramesh.in",
+//   "http://admin.imramesh.in",
+//   "http://localhost:3000",
+//   "http://localhost:5173",
+// ];
 
-const corsOptions = {
-  origin(
-    origin: string | undefined,
-    callback: (error: Error | null, allow?: boolean) => void,
-  ) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
+// const corsOptions = {
+//   origin(
+//     origin: string | undefined,
+//     callback: (error: Error | null, allow?: boolean) => void,
+//   ) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//       return;
+//     }
 
-    callback(new Error(`Origin ${origin} not allowed`));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-  ],
-  optionsSuccessStatus: 204,
-};
+//     callback(new Error(`Origin ${origin} not allowed`));
+//   },
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   allowedHeaders: [
+//     "Content-Type",
+//     "Authorization",
+//     "X-Requested-With",
+//     "Accept",
+//   ],
+//   optionsSuccessStatus: 204,
+// };
 
-app.use(cors(corsOptions));
-app.options(/^(.*)$/, cors(corsOptions));
-
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
