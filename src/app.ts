@@ -17,6 +17,10 @@ const allowedOrigins = [
   "https://admin.imramesh.in",
   "http://api.imramesh.in",
   "https://api.imramesh.in",
+  "https://admin.imramesh.in/dashboard/projects",
+  "https://admin.imramesh.in/dashboard/contacts",
+  "https://admin.imramesh.in/dashboard/hero",
+  "https://admin.imramesh.in/dashboard/works-at",
   process.env.FRONTEND_URL,
 ].filter((origin): origin is string => Boolean(origin));
 
